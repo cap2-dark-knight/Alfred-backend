@@ -3,9 +3,15 @@ from django.http import HttpResponse
 from django.contrib import auth
 from rest_framework.views import APIView
 from rest_framework.response import Response
-import json
+from django.contrib.auth.decorators import login_required
 from django.contrib.auth.models import User
 from django.views.decorators.csrf import csrf_exempt
+from django.views import View
+from django.core import serializers
+from django.core.exceptions import ObjectDoesNotExist
+import json
+from .models import Keyword
+
 
 
 def index(request):
@@ -47,4 +53,15 @@ class SignupView(APIView):
             return Response("ok", status=200)
 
 
+class KeywordView(APIView):
 
+    def get(self, request):
+
+        keyword = Keyword.objects.filter(follower=request.user)
+        qs_keyword = serializers.serialize('json', keyword)
+        print(qs_keyword)
+        return Response(qs_keyword, status=200)
+
+    def post(self, request):
+        keyword = request.data['keyword']
+        Keyword.objects.create()
