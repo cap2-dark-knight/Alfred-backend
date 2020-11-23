@@ -57,11 +57,18 @@ class KeywordView(APIView):
 
     def get(self, request):
 
-        keyword = Keyword.objects.filter(follower=request.user)
+        obj_keyword = Keyword.objects.filter(follower=request.user)
         qs_keyword = serializers.serialize('json', keyword)
         print(qs_keyword)
         return Response(qs_keyword, status=200)
 
     def post(self, request):
         keyword = request.data['keyword']
-        Keyword.objects.create()
+        try:
+            obj_keyword = Keyword.objects.filter(keyword=keyword)
+            try:
+                obj_obj_keyword.Keyword.objects.filter(keyword=keyword, follower=request.user)
+            except ObjectDoesNotExist:
+                obj_keyword.follower.add(request.user)
+        except ObjectDoesNotExist:
+            Keyword.objects.create(keyword = keyword, follwers = request.user, check_smartkeyword=False)
