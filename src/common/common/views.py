@@ -10,13 +10,31 @@ from django.views import View
 from django.core import serializers
 from django.core.exceptions import ObjectDoesNotExist
 import json
-from .models import Keyword
-
-
+from .models import Keyword,CrawledData,Profile
+from .crawler import general_crawler
+import threading
 
 def index(request):
     return HttpResponse("TEST!")
 
+
+def startCrawl(request):
+    thr = threading.Thread(target=doCrawl)
+    thr.setDaemon(True)
+    thr.start()
+    return HttpResponse("Crawling")
+
+def doCrawl():
+    keywords = Keyword.objects.all()
+    for keyword in keywords:
+        datalist = general_crawler(keyword.keyword)
+        for d in datalist :
+            CrawledData.objects.create(keywords=keyword, url=d['url'], title=d['title'], content=d['contents'], image_url=d['img'])
+
+def doCrawlByKeyword(keyword):
+    datalist = general_crawler(keyword.keyword)
+    for d in datalist :
+        CrawledData.objects.create(keywords=keyword, url=d['url'], title=d['title'], content=d['contents'], image_url=d['img'])
 
 class SigninView(APIView):
     def get(self, request):
@@ -49,6 +67,7 @@ class SignupView(APIView):
             return Response("duplicated email",401)
         else:
             user = User.objects.create_user(username = username, email=email, password=password, first_name=first_name, last_name=last_name)
+            Profile.objects.create(user=user)
             auth.login(request, user)
             return Response("ok", status=200)
 
@@ -67,6 +86,9 @@ class KeywordUpdateView(APIView):
             obj_obj_keyword = Keyword(keyword = keyword,check_smartkeyword=False)
             obj_obj_keyword.save()
             obj_obj_keyword.follower.add(request.user)
+            thr = threading.Thread(target=doCrawlByKeyword,args=[obj_obj_keyword])
+            thr.setDaemon(True)
+            thr.start()
             return Response(status=200)
         else:
             obj_obj_keyword = Keyword.objects.filter(keyword=keyword, follower=request.user)
@@ -88,4 +110,3 @@ class KeywordDeleteView(APIView):
         except ObjectDoesNotExist:
             return Response(status=404)
 
-       

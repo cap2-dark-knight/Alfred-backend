@@ -21,7 +21,7 @@ class CrawledData(models.Model):
     url = models.URLField(blank=True)
     title = models.CharField(max_length=30 ,blank=False, null=False)
     content = models.TextField()
-    image_url = models.URLField(blank=True)
+    image_url = models.URLField(blank=True, null=True)
 
 
 
