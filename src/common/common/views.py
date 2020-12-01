@@ -36,6 +36,14 @@ def doCrawlByKeyword(keyword):
     for d in datalist :
         CrawledData.objects.create(keywords=keyword, url=d['url'], title=d['title'], content=d['contents'], image_url=d['img'])
 
+class CrawledDataView(APIView):
+    def get(self, request):
+        keywords = Keyword.objects.filter(follower=request.user)
+        data = CrawledData.objects.filter(keywords__in=keywords)
+        print("data" + serializers.serialize('json', data))
+        
+        return Response("ok", status=200)
+
 class SigninView(APIView):
     def get(self, request):
         return Response("ok", status=200)
@@ -55,7 +63,7 @@ class SigninView(APIView):
 class SignupView(APIView):
 
     def post(self, request):
-        username = request.data['username']
+        username = request.data['email']
         password = request.data['password']
         email = request.data['email']
         first_name = request.data['first_name']
@@ -66,7 +74,7 @@ class SignupView(APIView):
         elif User.objects.filter(email=email).exists():
             return Response("duplicated email",401)
         else:
-            user = User.objects.create_user(username = username, email=email, password=password, first_name=first_name, last_name=last_name)
+            user = User.objects.create_user(username = email, email=email, password=password, first_name=first_name, last_name=last_name)
             Profile.objects.create(user=user)
             auth.login(request, user)
             return Response("ok", status=200)
