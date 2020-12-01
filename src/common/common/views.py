@@ -1,5 +1,5 @@
 from django.shortcuts import redirect, render
-from django.http import HttpResponse
+from django.http import HttpResponse, JsonResponse
 from django.contrib import auth
 from rest_framework.views import APIView
 from rest_framework.response import Response
@@ -18,14 +18,14 @@ import threading
 
 @ensure_csrf_cookie
 def index(request):
-    return HttpResponse('index')
+    return JsonResponse({'result':'success'}, status=200)
 
 
 def startCrawl(request):
     thr = threading.Thread(target=doCrawl)
     thr.setDaemon(True)
     thr.start()
-    return HttpResponse('Crawling')
+    return JsonResponse({'result':'success'}, status=200)
 
 def doCrawl():
     keywords = Keyword.objects.all()
@@ -43,8 +43,6 @@ class CrawledDataView(APIView):
     def get(self, request):
         keywords = Keyword.objects.filter(follower=request.user)
         data = CrawledData.objects.filter(keywords__in=keywords).values()
-        print(data)
-
         return Response({"crawled_data":data}, status=200)
 
 class SigninView(APIView):
@@ -74,7 +72,7 @@ class SignupView(APIView):
             user = User.objects.create_user(username = email, email=email, password=password, first_name=first_name, last_name=last_name)
             Profile.objects.create(user=user)
             auth.login(request, user)
-            return Response({'result':'success'}, status=200)
+            return Response({'result':'success'}, status=201)
 
 class SignoutView(APIView):
     def get(self, request, format=None):
@@ -98,24 +96,28 @@ class KeywordUpdateView(APIView):
             thr = threading.Thread(target=doCrawlByKeyword,args=[obj_obj_keyword])
             thr.setDaemon(True)
             thr.start()
-            return Response({'result':'success'},status=200)
+            obj_updated_keyword = Keyword.objects.filter(follower=request.user).values()
+            return Response({'result':'success','keywords':obj_updated_keyword},status=200)
         else:
             obj_obj_keyword = Keyword.objects.filter(keyword=keyword, follower=request.user)
             if obj_obj_keyword.count() == 0:
                 print(serializers.serialize('json', obj_keyword))
                 obj_keyword[0].follower.add(request.user)
-                return Response(status=200)
+                obj_updated_keyword = Keyword.objects.filter(follower=request.user).values()
+                return Response({'result':'success','keywords':obj_updated_keyword},status=200)
             else:
-                obj_obj_keyword = Keyword.objects.filter(keyword=keyword, follower=request.user)
-                return Response({'result':'fail','info':'keyword already exists'},status=200)
+                obj_updated_keyword = Keyword.objects.filter(follower=request.user).values()
+                return Response({'result':'fail','info':'keyword already exists','keywords':obj_updated_keyword},status=200)
             
 
 class KeywordDeleteView(APIView):
     def delete(self, request, keyword):
-        try:
-            obj_keyword = Keyword.objects.filter(keyword=keyword)
+
+        obj_keyword = Keyword.objects.filter(keyword=keyword, follower=request.user)
+        if obj_keyword.count()!= 0 :
             obj_keyword[0].follower.remove(request.user)
-            return Response({'result':'success'},status=200)
-        except ObjectDoesNotExist:
-            return Response({'result':'fail','info':'object does not exist'},status=404)
+            obj_updated_keyword = Keyword.objects.filter(follower=request.user).values()
+            return Response({'result':'success','keywords':obj_updated_keyword},status=200)
+        else : 
+            return Response({'result':'fail','info':'object does not exist'},status=200)
 
