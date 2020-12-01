@@ -12,8 +12,10 @@ from django.core.exceptions import ObjectDoesNotExist
 import json
 from .models import Keyword,CrawledData,Profile
 from .crawler import general_crawler
+from django.views.decorators.csrf import ensure_csrf_cookie
 import threading
 
+@ensure_csrf_cookie
 def index(request):
     return HttpResponse("TEST!")
 
@@ -45,33 +47,31 @@ class CrawledDataView(APIView):
         return Response("ok", status=200)
 
 class SigninView(APIView):
+
     def get(self, request):
         return Response("ok", status=200)
 
     def post(self, request):
-        username = request.data['username']
+        print("test")
+        username = request.data['email']
         password = request.data['password']
 
         user = auth.authenticate(request, username=username, password=password)
         if user is not None:
             auth.login(request, user)
             return Response("ok", status=200)
-
         else:
             return Response("fail",401)
 
 class SignupView(APIView):
 
     def post(self, request):
-        username = request.data['email']
         password = request.data['password']
         email = request.data['email']
         first_name = request.data['first_name']
         last_name = request.data['last_name']
 
-        if User.objects.filter(username=username).exists():
-            return Response("duplicated username",401)
-        elif User.objects.filter(email=email).exists():
+        if User.objects.filter(username=email).exists():
             return Response("duplicated email",401)
         else:
             user = User.objects.create_user(username = email, email=email, password=password, first_name=first_name, last_name=last_name)

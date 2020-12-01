@@ -38,19 +38,32 @@ INSTALLED_APPS = [
     'django.contrib.messages',
     'django.contrib.staticfiles',
     'common',
-    'rest_framework'
+    'rest_framework',
+    # 'allauth',
+    # 'allauth.account',
+    # 'rest_auth.registration'
 ]
 
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.middleware.common.CommonMiddleware',
-  #  'django.middleware.csrf.CsrfViewMiddleware',
+    'django.middleware.csrf.CsrfViewMiddleware',
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
-  #  'django.middleware.csrf.CsrfViewMiddleware',
 ]
+
+# REST_FRAMEWORK = {
+#     'DEFAULT_PERMISSION_CLASSES': (
+#         'rest_framework.permissions.IsAuthenticated',
+#     ),
+#     'DEFAULT_AUTHENTICATION_CLASSES': (
+#         'rest_framework_jwt.authentication.JSONWebTokenAuthentication',
+#     #    'rest_framework.authentication.SessionAuthentication',
+#     #    'rest_framework.authentication.BasicAuthentication',
+#     ),
+# }
 
 ROOT_URLCONF = 'alfred.urls'
 
@@ -126,9 +139,20 @@ STATIC_URL = '/static/'
 
 SITE_ID = 1
 
+# ACCOUNT_EMAIL_REQUIRED = False
+# ACCOUNT_EMAIL_VERIFICATION = "none"
+# REST_USE_JWT = True
+# ACCOUNT_LOGOUT_ON_GET = True
+
 ACCOUNT_EMAIL_REQUIRED = True
 ACCOUNT_USERNAME_REQUIRED = False
 ACCOUNT_SIGNUP_PASSWORD_ENTER_TWICE = False
 ACCOUNT_SESSION_REMEMBER = True
 ACCOUNT_AUTHENTICATION_METHOD = 'email'
 ACCOUNT_UNIQUE_EMAIL = True
+
+
+#csrf
+CSRF_HEADER_NAME = "HTTP_X_CSRFTOKEN"
+CSRF_TOKEN_HTTPONLY = False
+# CSRF_HEADER_NAME = "HTTP_X_CSRFTOKEN"
