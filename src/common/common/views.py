@@ -17,14 +17,14 @@ import threading
 
 @ensure_csrf_cookie
 def index(request):
-    return HttpResponse("TEST!")
+    return HttpResponse('TEST!')
 
 
 def startCrawl(request):
     thr = threading.Thread(target=doCrawl)
     thr.setDaemon(True)
     thr.start()
-    return HttpResponse("Crawling")
+    return HttpResponse('Crawling')
 
 def doCrawl():
     keywords = Keyword.objects.all()
@@ -41,15 +41,15 @@ def doCrawlByKeyword(keyword):
 class CrawledDataView(APIView):
     def get(self, request):
         keywords = Keyword.objects.filter(follower=request.user)
-        data = CrawledData.objects.filter(keywords__in=keywords)
-        print("data" + serializers.serialize('json', data))
-        
-        return Response("ok", status=200)
+        data = CrawledData.objects.filter(keywords__in=keywords).values()
+        print(data)
+
+        return Response({"crawled_data":data}, status=200)
 
 class SigninView(APIView):
 
     def get(self, request):
-        return Response("ok", status=200)
+        return Response('ok', status=200)
 
     def post(self, request):
         email = request.data['email']
@@ -58,9 +58,9 @@ class SigninView(APIView):
         user = auth.authenticate(request, username=email, password=password)
         if user is not None:
             auth.login(request, user)
-            return Response({"result":"success"}, status=200)
+            return Response({'result':'success'}, status=200)
         else:
-            return Response({"result":"fail"}, status=200)
+            return Response({'result':'fail'}, status=200)
 
 class SignupView(APIView):
 
@@ -71,18 +71,18 @@ class SignupView(APIView):
         last_name = request.data['last_name']
 
         if User.objects.filter(username=email).exists():
-            return Response({"result":"fail","info":"duplicated email"},401)
+            return Response({'result':'fail','info':'email already exists'},401)
         else:
             user = User.objects.create_user(username = email, email=email, password=password, first_name=first_name, last_name=last_name)
             Profile.objects.create(user=user)
             auth.login(request, user)
-            return Response({"result":"success"}, status=200)
+            return Response({'result':'success'}, status=200)
 
 
 class KeywordView(APIView):
     def get(self, request):
-        obj_keyword = Keyword.objects.filter(follower=request.user)
-        return Response(obj_keyword, status=200)
+        obj_keyword = Keyword.objects.filter(follower=request.user).values()
+        return Response({'keywords': obj_keyword}, status=200)
 
 class KeywordUpdateView(APIView):
     def put(self, request, keyword):
@@ -95,7 +95,7 @@ class KeywordUpdateView(APIView):
             thr = threading.Thread(target=doCrawlByKeyword,args=[obj_obj_keyword])
             thr.setDaemon(True)
             thr.start()
-            return Response(status=200)
+            return Response({'result':'success'},status=200)
         else:
             obj_obj_keyword = Keyword.objects.filter(keyword=keyword, follower=request.user)
             if obj_obj_keyword.count() == 0:
@@ -104,7 +104,7 @@ class KeywordUpdateView(APIView):
                 return Response(status=200)
             else:
                 obj_obj_keyword = Keyword.objects.filter(keyword=keyword, follower=request.user)
-                return Response(status=409)
+                return Response({'result':'fail','info':'keyword already exists'},status=409)
             
 
 class KeywordDeleteView(APIView):
@@ -112,7 +112,7 @@ class KeywordDeleteView(APIView):
         try:
             obj_keyword = Keyword.objects.filter(keyword=keyword)
             obj_keyword[0].follower.remove(request.user)
-            return Response(status=200)
+            return Response({'result':'success'},status=200)
         except ObjectDoesNotExist:
-            return Response(status=404)
+            return Response({'result':'fail','info':'object does not exist'},status=404)
 
