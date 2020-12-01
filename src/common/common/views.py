@@ -18,7 +18,7 @@ import threading
 
 @ensure_csrf_cookie
 def index(request):
-    return HttpResponse('TEST!')
+    return HttpResponse('index')
 
 
 def startCrawl(request):
@@ -49,9 +49,6 @@ class CrawledDataView(APIView):
 
 class SigninView(APIView):
 
-    def get(self, request):
-        return Response('ok', status=200)
-
     def post(self, request):
         email = request.data['email']
         password = request.data['password']
@@ -72,7 +69,7 @@ class SignupView(APIView):
         last_name = request.data['last_name']
 
         if User.objects.filter(username=email).exists():
-            return Response({'result':'fail','info':'email already exists'},401)
+            return Response({'result':'fail','info':'email already exists'},200)
         else:
             user = User.objects.create_user(username = email, email=email, password=password, first_name=first_name, last_name=last_name)
             Profile.objects.create(user=user)
@@ -110,7 +107,7 @@ class KeywordUpdateView(APIView):
                 return Response(status=200)
             else:
                 obj_obj_keyword = Keyword.objects.filter(keyword=keyword, follower=request.user)
-                return Response({'result':'fail','info':'keyword already exists'},status=409)
+                return Response({'result':'fail','info':'keyword already exists'},status=200)
             
 
 class KeywordDeleteView(APIView):
