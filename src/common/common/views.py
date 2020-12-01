@@ -52,16 +52,15 @@ class SigninView(APIView):
         return Response("ok", status=200)
 
     def post(self, request):
-        print("test")
-        username = request.data['email']
+        email = request.data['email']
         password = request.data['password']
 
-        user = auth.authenticate(request, username=username, password=password)
+        user = auth.authenticate(request, username=email, password=password)
         if user is not None:
             auth.login(request, user)
-            return Response("ok", status=200)
+            return Response({"result":"success"}, status=200)
         else:
-            return Response("fail",401)
+            return Response({"result":"fail"}, status=200)
 
 class SignupView(APIView):
 
@@ -72,19 +71,18 @@ class SignupView(APIView):
         last_name = request.data['last_name']
 
         if User.objects.filter(username=email).exists():
-            return Response("duplicated email",401)
+            return Response({"result":"fail","info":"duplicated email"},401)
         else:
             user = User.objects.create_user(username = email, email=email, password=password, first_name=first_name, last_name=last_name)
             Profile.objects.create(user=user)
             auth.login(request, user)
-            return Response("ok", status=200)
+            return Response({"result":"success"}, status=200)
 
 
 class KeywordView(APIView):
     def get(self, request):
         obj_keyword = Keyword.objects.filter(follower=request.user)
-        qs_keyword = serializers.serialize('json', obj_keyword)
-        return Response(qs_keyword, status=200)
+        return Response(obj_keyword, status=200)
 
 class KeywordUpdateView(APIView):
     def put(self, request, keyword):
