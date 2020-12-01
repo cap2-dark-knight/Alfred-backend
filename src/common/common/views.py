@@ -5,6 +5,7 @@ from rest_framework.views import APIView
 from rest_framework.response import Response
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth.models import User
+from django.contrib.auth import logout
 from django.views.decorators.csrf import csrf_exempt
 from django.views import View
 from django.core import serializers
@@ -77,6 +78,11 @@ class SignupView(APIView):
             Profile.objects.create(user=user)
             auth.login(request, user)
             return Response({'result':'success'}, status=200)
+
+class SignoutView(APIView):
+    def get(self, request, format=None):
+        logout(request)
+        return Response({'result':'success'},status=200)
 
 
 class KeywordView(APIView):
