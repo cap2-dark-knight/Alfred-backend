@@ -63,7 +63,6 @@ def doCrawlByKeyword(keyword):
 def deleteData():
     CrawledData.objects.filter(updated_time__lte=timezone.now()-timedelta(days=1)-timedelta(hours=1)).delete()
 
-
 class CrawledDataView(APIView):
     def get(self, request):
         keywords = Keyword.objects.filter(follower=request.user)
@@ -113,7 +112,7 @@ class KeywordUpdateView(APIView):
     def put(self, request, keyword):
         obj_keyword = Keyword.objects.filter(keyword=keyword)
         if obj_keyword.count()==0 :
-            obj_obj_keyword = Keyword(keyword = keyword,check_smartkeyword=False)
+            obj_obj_keyword = Keyword(keyword = keyword)
             obj_obj_keyword.save()
             obj_obj_keyword.follower.add(request.user)
             thr = threading.Thread(target=doCrawlByKeyword,args=[obj_obj_keyword])

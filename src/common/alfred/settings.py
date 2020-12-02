@@ -31,6 +31,7 @@ ALLOWED_HOSTS = []
 # Application definition
 
 INSTALLED_APPS = [
+    'django_crontab',
     'django.contrib.admin',
     'django.contrib.auth',
     'django.contrib.contenttypes',
@@ -156,3 +157,7 @@ ACCOUNT_UNIQUE_EMAIL = True
 CSRF_HEADER_NAME = "HTTP_X_CSRFTOKEN"
 CSRF_TOKEN_HTTPONLY = False
 # CSRF_HEADER_NAME = "HTTP_X_CSRFTOKEN"
+
+CRONJOBS = [
+    ('*/1 * * * *', 'common.cron.crawl'),
+]
