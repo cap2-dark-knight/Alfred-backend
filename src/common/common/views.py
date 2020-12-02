@@ -30,9 +30,11 @@ def startCrawl(request):
 def doCrawl():
     keywords = Keyword.objects.all()
     for keyword in keywords:
-        datalist = general_crawler(keyword.keyword)
-        for d in datalist :
-            CrawledData.objects.create(keywords=keyword, url=d['url'], title=d['title'], content=d['contents'], image_url=d['img'])
+        if keyword.check_smartkeyword == False : 
+            datalist = general_crawler(keyword.keyword)
+            for d in datalist :
+                CrawledData.objects.create(keywords=keyword, url=d['url'], title=d['title'], content=d['contents'], image_url=d['img'])
+        
 
 def doCrawlByKeyword(keyword):
     datalist = general_crawler(keyword.keyword)
@@ -50,7 +52,6 @@ class SigninView(APIView):
     def post(self, request):
         email = request.data['email']
         password = request.data['password']
-
         user = auth.authenticate(request, username=email, password=password)
         if user is not None:
             auth.login(request, user)
@@ -112,7 +113,6 @@ class KeywordUpdateView(APIView):
 
 class KeywordDeleteView(APIView):
     def delete(self, request, keyword):
-
         obj_keyword = Keyword.objects.filter(keyword=keyword, follower=request.user)
         if obj_keyword.count()!= 0 :
             obj_keyword[0].follower.remove(request.user)
@@ -121,3 +121,17 @@ class KeywordDeleteView(APIView):
         else : 
             return Response({'result':'fail','info':'object does not exist'},status=200)
 
+
+class SmartKeywordView(APIView):
+    def get(self, request):
+        obj_smartkeyword = Keyword.objects.filter(check_smartkeyword=True).values()
+        return Response({'result':'success','keywords':obj_smartkeyword},status=200)
+
+class UserView(APIView):
+    def get(self, request):
+        user = {
+            'email' : request.user.email,
+            'name' : request.user.last_name+request.user.first_name,
+            'data_period' : Profile.objects.filter(user=request.user).values().first()['data_period']
+        }
+        return Response({'result':'success','user' : user},status=200)
