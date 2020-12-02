@@ -6,7 +6,7 @@ from . import views
 
 urlpatterns = [
     path('', views.index, name='index'),
-    path('crawl', views.startCrawl, name='crawl'),
+    path('crawl/', views.startCrawl, name='crawl'),
     path('crawldata', signin_required(views.CrawledDataView.as_view()), name='data'),
     path('accounts/signin', views.SigninView.as_view(), name='signin'),
     path('accounts/signup',views.SignupView.as_view(), name='signup'),

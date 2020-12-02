@@ -1,20 +1,24 @@
-from django.shortcuts import redirect, render
-from django.http import HttpResponse, JsonResponse
+import json
+import threading
+
 from django.contrib import auth
-from rest_framework.views import APIView
-from rest_framework.response import Response
+from django.contrib.auth import logout
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth.models import User
-from django.contrib.auth import logout
-from django.views.decorators.csrf import csrf_exempt
-from django.views import View
 from django.core import serializers
 from django.core.exceptions import ObjectDoesNotExist
-import json
-from .models import Keyword,CrawledData,Profile
-from .crawler import general_crawler
-from django.views.decorators.csrf import ensure_csrf_cookie
-import threading
+from django.db.models.fields.related import OneToOneField
+from django.http import HttpResponse, JsonResponse
+from django.shortcuts import redirect, render
+from django.views import View
+from django.views.decorators.csrf import csrf_exempt, ensure_csrf_cookie
+
+from rest_framework.response import Response
+from rest_framework.views import APIView
+
+from .crawler import general_crawler, smart_crawler
+from .models import CrawledData, Keyword, Profile, SmartKeywordInfo
+
 
 @ensure_csrf_cookie
 def index(request):
@@ -30,14 +34,26 @@ def startCrawl(request):
 def doCrawl():
     keywords = Keyword.objects.all()
     for keyword in keywords:
-        if keyword.check_smartkeyword == False : 
+        datalist = []
+        if keyword.get_smartkeywordinfo() == None : 
             datalist = general_crawler(keyword.keyword)
-            for d in datalist :
-                CrawledData.objects.create(keywords=keyword, url=d['url'], title=d['title'], content=d['contents'], image_url=d['img'])
-        
+        else:
+            selector = keyword.get_smartkeywordinfo()
+            print(selector)
+            type = selector['type']
+            datalist = smart_crawler(type, keyword.keyword, selector)
+        for d in datalist :
+            CrawledData.objects.create(keywords=keyword, url=d['url'], title=d['title'], content=d['contents'], image_url=d['img'])
 
 def doCrawlByKeyword(keyword):
-    datalist = general_crawler(keyword.keyword)
+    datalist = []
+    if keyword.get_smartkeywordinfo() == None : 
+        datalist = general_crawler(keyword.keyword)
+    else:
+        selector = keyword.get_smartkeywordinfo()
+        print(selector)
+        type = selector['type']
+        datalist = smart_crawler(type, keyword.keyword, selector)
     for d in datalist :
         CrawledData.objects.create(keywords=keyword, url=d['url'], title=d['title'], content=d['contents'], image_url=d['img'])
 
