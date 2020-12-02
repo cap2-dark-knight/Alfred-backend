@@ -148,8 +148,8 @@ class UserView(APIView):
     def get(self, request):
         user = {
             'email' : request.user.email,
-            'first_name' : request.user.last_name,
-            'last_name':request.user.first_name,
+            'last_name' : request.user.last_name,
+            'first_name':request.user.first_name,
             'data_period' : Profile.objects.filter(user=request.user).values().first()['data_period']
         }
         return Response({'result':'success','user' : user},status=200)
