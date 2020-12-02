@@ -12,7 +12,7 @@ from django.http import HttpResponse, JsonResponse
 from django.shortcuts import redirect, render
 from django.views import View
 from django.views.decorators.csrf import csrf_exempt, ensure_csrf_cookie
-
+from django.db.models import Q
 from rest_framework.response import Response
 from rest_framework.views import APIView
 
@@ -147,7 +147,14 @@ class UserView(APIView):
     def get(self, request):
         user = {
             'email' : request.user.email,
-            'name' : request.user.last_name+request.user.first_name,
+            'first_name' : request.user.last_name,
+            'last_name':request.user.first_name,
             'data_period' : Profile.objects.filter(user=request.user).values().first()['data_period']
         }
         return Response({'result':'success','user' : user},status=200)
+
+class SmartKeywordView(APIView):
+    def get(self, request):
+        obj_smartkeywords = Keyword.objects.filter(~Q(smartkeywordinfo=None)).values()
+        print(obj_smartkeywords)
+        return Response({'result':'success','smartkeywords' : obj_smartkeywords },status=200)

@@ -15,7 +15,7 @@ class Keyword(models.Model):
     id = models.AutoField(primary_key=True)
     keyword = models.CharField(max_length=30 ,blank=False, null=False)
     follower = models.ManyToManyField(User, related_name="following")
-    check_smartkeyword = models.BooleanField(default=False, blank=True, null=False)
+
     def __str__(self):
         try:
             return self.keyword+" ["+self.smartkeywordinfo.type+"]"
@@ -39,6 +39,7 @@ class SmartKeywordInfo(models.Model):
     contents = models.TextField(default="", blank=True, null=True)
     def __str__(self):
         return self.keyword.keyword
+
 
 class CrawledData(models.Model):
     id = models.AutoField(primary_key=True)
