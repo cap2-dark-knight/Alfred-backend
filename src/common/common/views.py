@@ -144,11 +144,6 @@ class KeywordDeleteView(APIView):
             return Response({'result':'fail','info':'object does not exist'},status=200)
 
 
-class SmartKeywordView(APIView):
-    def get(self, request):
-        obj_smartkeyword = Keyword.objects.filter(check_smartkeyword=True).values()
-        return Response({'result':'success','keywords':obj_smartkeyword},status=200)
-
 class UserView(APIView):
     def get(self, request):
         user = {
