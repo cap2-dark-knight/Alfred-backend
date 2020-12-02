@@ -51,7 +51,7 @@ class CrawledData(models.Model):
     image_url = models.URLField(blank=True, null=True)
 
     def __str__(self):
-        return self.keywords.keyword + ' : ' +self.url
+        return "["+ str(self.updated_time) +"]"+ self.keywords.keyword + ' : ' +self.url
 
 
 

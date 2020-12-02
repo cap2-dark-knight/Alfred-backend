@@ -38,7 +38,6 @@ def smart_crawler(type, keyword, selector):
         if articles_len > 5:
             articles_len = 5 
         
-        print(type)
         for i in range(articles_len):
             if type=="naver" :
                 l.append(smart_crawler_naver(selector, articles[i]))
@@ -49,7 +48,6 @@ def smart_crawler(type, keyword, selector):
 
         if len(l) == 0 :
             return general_crawler(keyword)
-        print(l)
         return l
     except:
         return general_crawler(keyword)
@@ -62,7 +60,6 @@ def smart_crawler_naver(selector, article):
 
     target_raw = requests.get(target_url, headers={'User-Agent': 'Mozilla/5.0'})
     target_html = BeautifulSoup(target_raw.text, "html.parser")
-    # print(target_html)
     img = target_html.select_one(selector['image'])
     if img is not None:
         img = img['src']

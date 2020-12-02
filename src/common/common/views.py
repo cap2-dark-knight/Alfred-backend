@@ -15,6 +15,8 @@ from django.views.decorators.csrf import csrf_exempt, ensure_csrf_cookie
 from django.db.models import Q
 from rest_framework.response import Response
 from rest_framework.views import APIView
+from datetime import datetime, timedelta
+from django.utils import timezone
 
 from .crawler import general_crawler, smart_crawler
 from .models import CrawledData, Keyword, Profile, SmartKeywordInfo
@@ -26,9 +28,12 @@ def index(request):
 
 
 def startCrawl(request):
-    thr = threading.Thread(target=doCrawl)
-    thr.setDaemon(True)
-    thr.start()
+    crawl_thr = threading.Thread(target=doCrawl)
+    crawl_thr.setDaemon(True)
+    crawl_thr.start()
+    del_thr = threading.Thread(target=deleteData)
+    del_thr.setDaemon(True)
+    del_thr.start()
     return JsonResponse({'result':'success'}, status=200)
 
 def doCrawl():
@@ -39,7 +44,6 @@ def doCrawl():
             datalist = general_crawler(keyword.keyword)
         else:
             selector = keyword.get_smartkeywordinfo()
-            print(selector)
             type = selector['type']
             datalist = smart_crawler(type, keyword.keyword, selector)
         for d in datalist :
@@ -51,11 +55,14 @@ def doCrawlByKeyword(keyword):
         datalist = general_crawler(keyword.keyword)
     else:
         selector = keyword.get_smartkeywordinfo()
-        print(selector)
         type = selector['type']
         datalist = smart_crawler(type, keyword.keyword, selector)
     for d in datalist :
         CrawledData.objects.create(keywords=keyword, url=d['url'], title=d['title'], content=d['contents'], image_url=d['img'])
+
+def deleteData():
+    CrawledData.objects.filter(updated_time__lte=timezone.now()-timedelta(days=1)-timedelta(hours=1)).delete()
+
 
 class CrawledDataView(APIView):
     def get(self, request):
@@ -105,7 +112,6 @@ class KeywordView(APIView):
 class KeywordUpdateView(APIView):
     def put(self, request, keyword):
         obj_keyword = Keyword.objects.filter(keyword=keyword)
-        print(obj_keyword.count())
         if obj_keyword.count()==0 :
             obj_obj_keyword = Keyword(keyword = keyword,check_smartkeyword=False)
             obj_obj_keyword.save()
@@ -156,5 +162,4 @@ class UserView(APIView):
 class SmartKeywordView(APIView):
     def get(self, request):
         obj_smartkeywords = Keyword.objects.filter(~Q(smartkeywordinfo=None)).values()
-        print(obj_smartkeywords)
         return Response({'result':'success','smartkeywords' : obj_smartkeywords },status=200)
