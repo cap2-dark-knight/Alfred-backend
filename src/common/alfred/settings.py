@@ -39,8 +39,6 @@ INSTALLED_APPS = [
     'django.contrib.messages',
     'django.contrib.staticfiles',
     'common',
-    'rest_framework',
-    'multiselectfield',
     # 'allauth',
     # 'allauth.account',
     # 'rest_auth.registration'
