@@ -149,7 +149,7 @@ class UserView(APIView):
             'email' : request.user.email,
             'last_name' : request.user.last_name,
             'first_name':request.user.first_name,
-            'data_period' : Profile.objects.filter(user=request.user).values().first()['data_period']
+            'alart_times' : Profile.objects.filter(user=request.user)[0].get_alart_time_list()
         }
         return Response({'result':'success','user' : user},status=200)
 

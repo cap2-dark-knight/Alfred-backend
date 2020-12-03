@@ -40,6 +40,7 @@ INSTALLED_APPS = [
     'django.contrib.staticfiles',
     'common',
     'rest_framework',
+    'multiselectfield',
     # 'allauth',
     # 'allauth.account',
     # 'rest_auth.registration'
