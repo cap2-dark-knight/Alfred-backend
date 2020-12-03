@@ -25,7 +25,7 @@ SECRET_KEY = ')+9+q+tjk$g2a4m1eske60^zt)s9=%y9u*k8bmn@-tedu#*2=3'
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = []
+ALLOWED_HOSTS = ['34.212.16.172','127.0.0.1']
 
 
 # Application definition
@@ -39,6 +39,7 @@ INSTALLED_APPS = [
     'django.contrib.messages',
     'django.contrib.staticfiles',
     'common',
+    'rest_framework'
     # 'allauth',
     # 'allauth.account',
     # 'rest_auth.registration'
