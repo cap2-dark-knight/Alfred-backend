@@ -10,19 +10,19 @@ class Profile(models.Model):
     user = models.OneToOneField(User, on_delete=models.CASCADE)
 
     last_updated = models.DateTimeField(blank = True, auto_now_add=True)
-    alart_times = models.IntegerField(default=0b1000000000, blank=False, null=False)
+    alert_times = models.IntegerField(default=0b1000000000, blank=False, null=False)
 
-    def get_alart_time_list(self):
+    def get_alert_time_list(self):
         idx=0b1
         times = []
         for i in range(24):
-            if idx & self.alart_times:
+            if idx & self.alert_times:
                 times.append(i) 
             idx = idx << 1
         return times          
 
     def __str__(self):
-        return self.user.email+' '+str(self.get_alart_time_list())
+        return self.user.email+' '+str(self.get_alert_time_list())
 
 class Keyword(models.Model):
     id = models.AutoField(primary_key=True)

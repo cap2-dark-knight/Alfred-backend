@@ -146,37 +146,37 @@ class KeywordDeleteView(APIView):
 class UserView(APIView):
     def get(self, request):
         try:
-            alart_times = request.user.profile.get_alart_time_list()
+            alert_times = request.user.profile.get_alert_time_list()
             user = {
                 'email' : request.user.email,
                 'last_name' : request.user.last_name,
                 'first_name':request.user.first_name,
-                'alart_times' : alart_times
+                'alert_times' : alert_times
             }
             return Response({'result':'success','user' : user},status=200)
         except:
             return Response({'result':'fail', 'info':'Profile no exist'},status=200)
 
-class AlartTimeView(APIView):
+class AlertTimeView(APIView):
     def post(self, request):
         try:
-            alart_times = request.data['alart_times']
-            alart_time_int = 0
-            for alart_time in alart_times:
-                alart_time_int += (0b1 << alart_time)
-            if alart_time_int == 0:
+            alert_times = request.data['alert_times']
+            alert_time_int = 0
+            for alert_time in alert_times:
+                alert_time_int += (0b1 << alert_time)
+            if alert_time_int == 0:
                 return Response({'result':'fail','info' : 'Please select at least one option'},status=200)
             else :
                 obj_profile = request.user.profile
-                obj_profile.alart_times = alart_time_int
+                obj_profile.alert_times = alert_time_int
                 obj_profile.save()
-                return Response({'result':'success', 'alart_times' : obj_profile.get_alart_time_list()},status=200)
+                return Response({'result':'success', 'alert_times' : obj_profile.get_alert_time_list()},status=200)
         except:
             return Response({'result':'fail', 'info':'Please check the data format.'},status=200)
 
     def get(self, request):
-        alart_times =  Profile.objects.filter(user=request.user)[0].get_alart_time_list()
-        return Response({'result':'success', 'alart_times':alart_times}, status=200)
+        alert_times =  Profile.objects.filter(user=request.user)[0].get_alert_time_list()
+        return Response({'result':'success', 'alert_times':alert_times}, status=200)
 
 class SmartKeywordView(APIView):
     def get(self, request):
