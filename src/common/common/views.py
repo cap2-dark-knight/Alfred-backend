@@ -66,7 +66,26 @@ def deleteData():
 class CrawledDataView(APIView):
     def get(self, request):
         keywords = Keyword.objects.filter(follower=request.user)
-        data = CrawledData.objects.filter(keywords__in=keywords).values()
+
+        alert_times =  Profile.objects.filter(user=request.user)[0].get_alert_time_list()
+        target_time = None
+        now = timezone.now()
+        now_h = timezone.now().hour
+        now_date = now-timedelta(hours=now_h)-timedelta(minutes=now.minute)-timedelta(seconds=now.second)
+
+        for t in alert_times:
+            if t - now_h <= 0:
+                target_time = now_date+timedelta(hours=t)
+
+        if target_time == None :
+            target_time = now_date-timedelta(days=1)+timedelta(hours=alert_times[-1])
+        
+        data = {}
+        data = CrawledData.objects.filter(
+            keywords__in=keywords,
+            updated_time__range=[target_time-timedelta(days=30), target_time+timedelta(minutes=30)]
+        ).values()
+        
         return Response({"crawled_data":data}, status=200)
 
 class SigninView(APIView):
