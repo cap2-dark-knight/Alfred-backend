@@ -44,7 +44,7 @@ def smart_crawler(type, keyword, selector):
             elif type == "saramin" :
                 l.append(smart_crawler_saramin(selector, articles[i]))
             elif type == "daum":
-                l.append(smart_crawler_naver(selector, articles[i]))
+                l.append(smart_crawler_daum(selector, articles[i]))
 
         if len(l) == 0 :
             return general_crawler(keyword)
@@ -68,6 +68,21 @@ def smart_crawler_naver(selector, article):
     txt = contents_list[2]
     if len(txt) >= 60:
         txt = txt[:57] + "..."
+    news_dict = {'url' : target_url, 'title' : title, 'img' : img, 'contents' : txt} 
+    return news_dict
+
+def smart_crawler_daum(selector, article):    
+    target_url = article.select_one("a")["href"]
+    title = article.select_one('img')['alt']
+    img = article.select_one('img')
+    if img is not None:
+            img = img['src']
+
+    raw = requests.get(target_url, headers={'User-Agent': 'Mozilla/5.0'})
+    html = BeautifulSoup(raw.text, "html.parser")
+    contents = html.select_one('div.news_view').get_text('\n', strip=True)
+    if len(contents) >= 60:
+            contents = contents[:57] + "..."
     news_dict = {'url' : target_url, 'title' : title, 'img' : img, 'contents' : contents} 
     return news_dict
 
