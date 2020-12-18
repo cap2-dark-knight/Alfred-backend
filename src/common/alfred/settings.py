@@ -11,19 +11,24 @@ https://docs.djangoproject.com/en/3.1/ref/settings/
 """
 
 from pathlib import Path
-
+import json
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
+config = {}
+with open('../../config/config.json','r') as f:
+    config = json.load(f)
 
+ENV = config['DEFAULT']['ENV']
 
 # Quick-start development settings - unsuitable for production
 # See https://docs.djangoproject.com/en/3.1/howto/deployment/checklist/
 
 # SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = ')+9+q+tjk$g2a4m1eske60^zt)s9=%y9u*k8bmn@-tedu#*2=3'
+SECRET_KEY = config['DEFAULT']['SECRET_KEY']
 
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
+
 
 ALLOWED_HOSTS = ['34.212.16.172','127.0.0.1','localhost']
 
@@ -89,13 +94,25 @@ WSGI_APPLICATION = 'alfred.wsgi.application'
 
 # Database
 # https://docs.djangoproject.com/en/3.1/ref/settings/#databases
-
-DATABASES = {
-    'default': {
-        'ENGINE': 'django.db.backends.sqlite3',
-        'NAME': BASE_DIR / 'db.sqlite3',
+if ENV == 'DEV':
+    DATABASES = {
+        'default': {
+            'ENGINE': 'django.db.backends.sqlite3',
+            'NAME': BASE_DIR / 'db.sqlite3',
+        }
     }
-}
+else:
+    DATABASES = {
+        'default': {
+            'ENGINE': 'django.db.backends.mysql',
+            'NAME':config['DB']['NAME'],
+            'USER':config['DB']['USER'],
+            'PASSWORD':config['DB']['PASSWORD'],
+            'HOST':config['DB']['HOST'],
+            'PORT':config['DB']['PORT'],
+        }
+    }
+
 
 
 # Password validation
