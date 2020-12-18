@@ -176,5 +176,5 @@ CSRF_TOKEN_HTTPONLY = False
 # CSRF_HEADER_NAME = "HTTP_X_CSRFTOKEN"
 
 CRONJOBS = [
-    ('*/1 * * * *', 'common.cron.crawl'),
+    ('* */1 * * *', 'common.cron.crawl'),
 ]
