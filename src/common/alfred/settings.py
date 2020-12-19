@@ -30,7 +30,7 @@ SECRET_KEY = config['DEFAULT']['SECRET_KEY']
 DEBUG = True
 
 
-ALLOWED_HOSTS = ['34.212.16.172','127.0.0.1','localhost']
+ALLOWED_HOSTS = ['34.212.16.172','127.0.0.1','localhost','ec2-34-212-16-172.us-west-2.compute.amazonaws.com','fred.cf','www.fred.cf']
 
 
 # Application definition

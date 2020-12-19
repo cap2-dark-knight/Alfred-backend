@@ -50,6 +50,9 @@ def doCrawl():
             CrawledData.objects.create(keywords=keyword, url=d['url'], title=d['title'], content=d['contents'], image_url=d['img'])
 
 def doCrawlByKeyword(keyword):
+    now = timezone.now()
+    now_h = now-timedelta(minutes=now.minute)-timedelta(seconds=now.second)
+
     datalist = []
     if keyword.get_smartkeywordinfo() == None : 
         datalist = general_crawler(keyword.keyword)
@@ -58,7 +61,9 @@ def doCrawlByKeyword(keyword):
         type = selector['type']
         datalist = smart_crawler(type, keyword.keyword, selector)
     for d in datalist :
-        CrawledData.objects.create(keywords=keyword, url=d['url'], title=d['title'], content=d['contents'], image_url=d['img'])
+        for i in range(24):
+            creates = CrawledData.objects.create(keywords=keyword, url=d['url'], title=d['title'], content=d['contents'], image_url=d['img'])
+            CrawledData.objects.filter(pk=creates.pk).update(updated_time = now_h-timedelta(hours=i))
 
 def deleteData():
     CrawledData.objects.filter(updated_time__lte=timezone.now()-timedelta(days=1)-timedelta(hours=1)).delete()
