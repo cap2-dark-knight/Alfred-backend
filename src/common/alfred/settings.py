@@ -177,5 +177,5 @@ CORS_ALLOW_ALL_ORIGINS = True
 CORS_ALLOW_CREDENTIALS = True
 
 CRONJOBS = [
-    ('* */1 * * *', 'common.cron.crawl'),
+    ('0 * * * *', 'common.cron.crawl'),
 ]

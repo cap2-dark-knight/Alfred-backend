@@ -55,7 +55,7 @@ def doCrawl():
 def doCrawlByKeyword(keyword):
     now = timezone.now()
     now_h = now-timedelta(minutes=now.minute)-timedelta(seconds=now.second)
-
+    print("keyword:"+str(keyword))
     datalist = []
     if keyword.get_smartkeywordinfo() == None:
         datalist = general_crawler(keyword.keyword)
@@ -65,15 +65,14 @@ def doCrawlByKeyword(keyword):
         datalist = smart_crawler(type, keyword.keyword, selector)
     for d in datalist:
         for i in range(24):
-            creates = CrawledData.objects.create(
-                keywords=keyword, url=d['url'], title=d['title'], content=d['contents'], image_url=d['img'])
-            CrawledData.objects.filter(pk=creates.pk).update(
-                updated_time=now_h-timedelta(hours=i))
+            creates = CrawledData.objects.create(keywords=keyword, url=d['url'], title=d['title'], content=d['contents'], image_url=d['img'])
+            CrawledData.objects.filter(pk=creates.pk).update(updated_time=now_h-timedelta(hours=i))
+    print("keyword:"+str(keyword))
+
 
 
 def deleteData():
-    CrawledData.objects.filter(updated_time__lte=timezone.now(
-    )-timedelta(days=1)-timedelta(hours=1)).delete()
+    CrawledData.objects.filter(updated_time__lte=timezone.now()-timedelta(days=1)-timedelta(hours=1)).delete()
 
 
 class CrawledDataView(APIView):
@@ -85,23 +84,19 @@ class CrawledDataView(APIView):
         target_time = None
         now = timezone.now()
         now_h = timezone.now().hour
-        now_date = now - \
-            timedelta(hours=now_h)-timedelta(minutes=now.minute) - \
-            timedelta(seconds=now.second)
+        now_date = now - timedelta(hours=now_h)-timedelta(minutes=now.minute) - timedelta(seconds=now.second)
 
         for t in alert_times:
             if t - now_h <= 0:
                 target_time = now_date+timedelta(hours=t)
 
         if target_time == None:
-            target_time = now_date - \
-                timedelta(days=1)+timedelta(hours=alert_times[-1])
+            target_time = now_date - timedelta(days=1)+timedelta(hours=alert_times[-1])
 
         data = {}
         data = CrawledData.objects.filter(
             keywords__in=keywords,
-            updated_time__range=[
-                target_time-timedelta(days=30), target_time+timedelta(minutes=30)]
+            updated_time__range=[target_time-timedelta(minutes=29), target_time+timedelta(minutes=30)]
         ).values()
 
         return Response({"crawled_data": data}, status=200)
@@ -135,8 +130,7 @@ class SignupView(APIView):
         if User.objects.filter(username=email).exists():
             return Response({'result': 'fail', 'info': 'email already exists'}, 200)
         else:
-            user = User.objects.create_user(
-                username=email, email=email, password=password, first_name=first_name, last_name=last_name)
+            user = User.objects.create_user(username=email, email=email, password=password, first_name=first_name, last_name=last_name)
             Profile.objects.create(user=user)
             auth.login(request, user)
             return Response({'result': 'success'}, status=201)
@@ -155,8 +149,7 @@ class KeywordView(APIView):
 
 
 class KeywordUpdateView(APIView):
-    authentication_classes = (
-        ExemptCSRFSessionAuthentication, BasicAuthentication)
+    authentication_classes = (ExemptCSRFSessionAuthentication, BasicAuthentication)
 
     def put(self, request, keyword):
         obj_keyword = Keyword.objects.filter(keyword=keyword)
@@ -164,12 +157,11 @@ class KeywordUpdateView(APIView):
             obj_obj_keyword = Keyword(keyword=keyword)
             obj_obj_keyword.save()
             obj_obj_keyword.follower.add(request.user)
-            thr = threading.Thread(
-                target=doCrawlByKeyword, args=[obj_obj_keyword])
-            thr.setDaemon(True)
-            thr.start()
-            obj_updated_keyword = Keyword.objects.filter(
-                follower=request.user).values()
+            #thr = threading.Thread(target=doCrawlByKeyword, args=[obj_obj_keyword])
+          #  thr.setDaemon(True)
+           # thr.start()
+            doCrawlByKeyword(obj_obj_keyword)
+            obj_updated_keyword = Keyword.objects.filter(follower=request.user).values()
             return Response({'result': 'success', 'keywords': obj_updated_keyword}, status=200)
         else:
             obj_obj_keyword = Keyword.objects.filter(
@@ -195,8 +187,7 @@ class KeywordDeleteView(APIView):
             keyword=keyword, follower=request.user)
         if obj_keyword.count() != 0:
             obj_keyword[0].follower.remove(request.user)
-            obj_updated_keyword = Keyword.objects.filter(
-                follower=request.user).values()
+            obj_updated_keyword = Keyword.objects.filter(follower=request.user).values()
             return Response({'result': 'success', 'keywords': obj_updated_keyword}, status=200)
         else:
             return Response({'result': 'fail', 'info': 'object does not exist'}, status=200)
