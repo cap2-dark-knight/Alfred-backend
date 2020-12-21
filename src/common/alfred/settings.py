@@ -9,15 +9,17 @@ https://docs.djangoproject.com/en/3.1/topics/settings/
 For the full list of settings and their values, see
 https://docs.djangoproject.com/en/3.1/ref/settings/
 """
-
+import os
 from pathlib import Path
 import json
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
-BASE_DIR = Path(__file__).resolve().parent.parent
-config = {}
-with open('../../config/config.json','r') as f:
-    config = json.load(f)
+#BASE_DIR = Path(__file__).resolve().parent.parent
+BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 
+config = {}
+# with open('../../config/config.json', 'r') as f:
+with open(os.path.join(BASE_DIR, '../../config/config.json'), 'r') as f:
+    config = json.load(f)
 ENV = config['DEFAULT']['ENV']
 
 # Quick-start development settings - unsuitable for production
@@ -30,7 +32,8 @@ SECRET_KEY = config['DEFAULT']['SECRET_KEY']
 DEBUG = True
 
 
-ALLOWED_HOSTS = ['34.212.16.172','127.0.0.1','localhost','ec2-34-212-16-172.us-west-2.compute.amazonaws.com','fred.cf','www.fred.cf']
+ALLOWED_HOSTS = ['34.212.16.172', '127.0.0.1', 'localhost',
+                 'ec2-34-212-16-172.us-west-2.compute.amazonaws.com', 'fred.cf', 'www.fred.cf']
 
 
 # Application definition
@@ -44,7 +47,8 @@ INSTALLED_APPS = [
     'django.contrib.messages',
     'django.contrib.staticfiles',
     'common',
-    'rest_framework'
+    'rest_framework',
+    'corsheaders'
     # 'allauth',
     # 'allauth.account',
     # 'rest_auth.registration'
@@ -53,8 +57,9 @@ INSTALLED_APPS = [
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
+    'corsheaders.middleware.CorsMiddleware',
     'django.middleware.common.CommonMiddleware',
-    'django.middleware.csrf.CsrfViewMiddleware',
+    # 'django.middleware.csrf.CsrfViewMiddleware',
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
@@ -73,10 +78,11 @@ MIDDLEWARE = [
 
 ROOT_URLCONF = 'alfred.urls'
 
+TEMPLATE_DIR = os.path.join(BASE_DIR, 'templates')
 TEMPLATES = [
     {
         'BACKEND': 'django.template.backends.django.DjangoTemplates',
-        'DIRS': [],
+        'DIRS': [TEMPLATE_DIR],
         'APP_DIRS': True,
         'OPTIONS': {
             'context_processors': [
@@ -105,14 +111,13 @@ else:
     DATABASES = {
         'default': {
             'ENGINE': 'django.db.backends.mysql',
-            'NAME':config['DB']['NAME'],
-            'USER':config['DB']['USER'],
-            'PASSWORD':config['DB']['PASSWORD'],
-            'HOST':config['DB']['HOST'],
-            'PORT':config['DB']['PORT'],
+            'NAME': config['DB']['NAME'],
+            'USER': config['DB']['USER'],
+            'PASSWORD': config['DB']['PASSWORD'],
+            'HOST': config['DB']['HOST'],
+            'PORT': config['DB']['PORT'],
         }
     }
-
 
 
 # Password validation
@@ -147,12 +152,10 @@ USE_I18N = True
 USE_L10N = True
 
 
-
 # Static files (CSS, JavaScript, Images)
 # https://docs.djangoproject.com/en/3.1/howto/static-files/
 
 STATIC_URL = '/static/'
-
 
 
 SITE_ID = 1
@@ -169,11 +172,9 @@ ACCOUNT_SESSION_REMEMBER = True
 ACCOUNT_AUTHENTICATION_METHOD = 'email'
 ACCOUNT_UNIQUE_EMAIL = True
 
-
-#csrf
-CSRF_HEADER_NAME = "HTTP_X_CSRFTOKEN"
-CSRF_TOKEN_HTTPONLY = False
-# CSRF_HEADER_NAME = "HTTP_X_CSRFTOKEN"
+# CORS policy
+CORS_ALLOW_ALL_ORIGINS = True
+CORS_ALLOW_CREDENTIALS = True
 
 CRONJOBS = [
     ('* */1 * * *', 'common.cron.crawl'),
